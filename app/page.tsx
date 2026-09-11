@@ -26,7 +26,7 @@ export default function Home(){
  const multiply=(bus:BU[],where:string,x:Person)=>bus.map(b=>where===`${b.id}-accounts`?{...b,accounts:[...b.accounts,x]}:where===`${b.id}-designers`?{...b,designers:[...b.designers,x]}:where===`${b.id}-writers`?{...b,writers:[...b.writers,x]}:b)
  const editVertical=(id:string,name:string)=>setData(d=>id==="finance"?{...d,finance:{...d.finance,name}}:{...d,support:d.support.map(s=>s.id===id?{...s,name}:s)})
  return <main><header><div><h1>Zen-Sheet</h1><p>Organization Builder · click any card to edit</p></div><button className="reset" onClick={()=>{localStorage.removeItem(STORAGE);location.reload()}}>Reset</button></header>
- <section className="canvas">
+ <section className="canvas"><div className="chart">
   <div className="topNode"><Card person={data.founders} onEdit={edit}/></div>
   <div className="topBranches">
    <div className="directReportRow">
@@ -35,7 +35,7 @@ export default function Home(){
    </div>
    <div className="mahimaChildren"><div className="mahimaConnector"/><div className="sevenLevel"><div className="line"/>{data.bus.map(b=><BUColumn key={b.id} b={b} onEdit={edit} onAdd={(k)=>addPerson(`${b.id}-${k}`)}/>)}{data.support.map(s=><SupportColumn key={s.id} s={s} onEdit={edit} onRename={()=>editVertical(s.id,s.name)} onAdd={()=>addPerson(s.id)}/>)}</div></div>
   </div>
- </section>
+ </div></section>
  {selected&&<div className="modal"><div className="dialog"><h2>Edit person</h2><label>Name<input autoFocus value={selected.name} onChange={e=>setSelected({...selected,name:e.target.value})}/></label><label>Designation<input value={selected.designation} onChange={e=>setSelected({...selected,designation:e.target.value})}/></label><div className="actions"><button onClick={()=>setSelected(null)}>Cancel</button><button className="save" onClick={save}>Save</button></div></div></div>}
  </main>
 }
