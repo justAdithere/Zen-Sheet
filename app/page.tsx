@@ -22,17 +22,18 @@ export default function Home(){
  const edit=(x:Person)=>setSelected({...x})
  const replace=(d:Data,x:Person)=>({...d,founders:d.founders.id===x.id?x:d.founders,mahima:d.mahima.id===x.id?x:d.mahima,finance:{...d.finance,people:d.finance.people.map(a=>a.id===x.id?x:a)},support:d.support.map(s=>({...s,people:s.people.map(a=>a.id===x.id?x:a)})),bus:d.bus.map(b=>({...b,lead:b.lead.id===x.id?x:b.lead,design:b.design.id===x.id?x:b.design,content:b.content.id===x.id?x:b.content,accounts:b.accounts.map(a=>a.id===x.id?x:a),designers:b.designers.map(a=>a.id===x.id?x:a),writers:b.writers.map(a=>a.id===x.id?x:a)}))})
  const save=()=>{if(selected){setData(d=>replace(d,selected));setSelected(null)}}
- const addPerson=(where:string)=>setData(d=>{const x=p(`${where}-${Date.now()}`,where.includes("account")?"Account Manager":where.includes("designer")?"Designer":where.includes("writer")?"Content Writer":"Name");if(where==="finance")return {...d,finance:{...d.finance,people:[...d.finance.people,x]}};const m=where.match(/^(advisory|operations|hr)$/);if(m)return {...d,support:d.support.map(s=>s.id===m[1]?{...s,people:[...s.people,x]}:s)};const b=multiply(d.bus,where,x);return {...d,bus:b}})
+ const addPerson=(where:string)=>setData(d=>{const x=p(`${where}-${Date.now()}`,where.includes("account")?"Account Manager":where.includes("designer")?"Designer":where.includes("writer")?"Content Writer":"Name");if(where==="finance")return {...d,finance:{...d.finance,people:[...d.finance.people,x]}};const m=where.match(/^(advisory|operations|hr)$/);if(m)return {...d,support:d.support.map(s=>s.id===m[1]?{...s,people:[...s.people,x]}:s)};return {...d,bus:multiply(d.bus,where,x)}})
  const multiply=(bus:BU[],where:string,x:Person)=>bus.map(b=>where===`${b.id}-accounts`?{...b,accounts:[...b.accounts,x]}:where===`${b.id}-designers`?{...b,designers:[...b.designers,x]}:where===`${b.id}-writers`?{...b,writers:[...b.writers,x]}:b)
  const editVertical=(id:string,name:string)=>setData(d=>id==="finance"?{...d,finance:{...d.finance,name}}:{...d,support:d.support.map(s=>s.id===id?{...s,name}:s)})
- const addVerticalPerson=(id:string)=>addPerson(id)
  return <main><header><div><h1>Zen-Sheet</h1><p>Organization Builder · click any card to edit</p></div><button className="reset" onClick={()=>{localStorage.removeItem(STORAGE);location.reload()}}>Reset</button></header>
  <section className="canvas">
   <div className="topNode"><Card person={data.founders} onEdit={edit}/></div>
-  <div className="topBranches"><section className="financeBranch"><div className="levelLabel">DIRECT REPORT</div><button className="verticalTitle" onClick={()=>editVertical("finance",data.finance.name)}>{data.finance.name}</button><PersonList people={data.finance.people} onEdit={edit} onAdd={()=>addVerticalPerson("finance")} label="Finance person"/></section>
-   <section className="mahimaBranch"><div className="levelLabel">DIRECT REPORT</div><Card person={data.mahima} onEdit={edit}/>
-    <div className="sevenLevel"><div className="line"/>{data.bus.map(b=><BUColumn key={b.id} b={b} onEdit={edit} onAdd={(k)=>addPerson(`${b.id}-${k}`)}/>)}{data.support.map(s=><SupportColumn key={s.id} s={s} onEdit={edit} onRename={()=>editVertical(s.id,s.name)} onAdd={()=>addPerson(s.id)}/>)}</div>
-   </section>
+  <div className="topBranches">
+   <div className="directReportRow">
+    <section className="financeBranch"><div className="levelLabel">DIRECT REPORT</div><button className="verticalTitle" onClick={()=>editVertical("finance",data.finance.name)}>{data.finance.name}</button><PersonList people={data.finance.people} onEdit={edit} onAdd={()=>addPerson("finance")} label="Finance person"/></section>
+    <section className="mahimaBranch"><div className="levelLabel">DIRECT REPORT</div><Card person={data.mahima} onEdit={edit}/></section>
+   </div>
+   <div className="mahimaChildren"><div className="mahimaConnector"/><div className="sevenLevel"><div className="line"/>{data.bus.map(b=><BUColumn key={b.id} b={b} onEdit={edit} onAdd={(k)=>addPerson(`${b.id}-${k}`)}/>)}{data.support.map(s=><SupportColumn key={s.id} s={s} onEdit={edit} onRename={()=>editVertical(s.id,s.name)} onAdd={()=>addPerson(s.id)}/>)}</div></div>
   </div>
  </section>
  {selected&&<div className="modal"><div className="dialog"><h2>Edit person</h2><label>Name<input autoFocus value={selected.name} onChange={e=>setSelected({...selected,name:e.target.value})}/></label><label>Designation<input value={selected.designation} onChange={e=>setSelected({...selected,designation:e.target.value})}/></label><div className="actions"><button onClick={()=>setSelected(null)}>Cancel</button><button className="save" onClick={save}>Save</button></div></div></div>}
