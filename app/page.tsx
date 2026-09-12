@@ -2,45 +2,35 @@
 import { useEffect, useState } from "react"
 
 type Person={id:string;name:string;designation:string}
-type Vertical={id:string;name:string;designation:string;people:Person[]}
-type BU={id:string;name:string;lead:Person;design:Person;content:Person;accounts:Person[];designers:Person[];writers:Person[]}
-type Data={founders:Person;finance:Vertical;mahima:Person;support:Vertical[];bus:BU[]}
+type Account={id:string;name:string;cluster:string;am:string;designer:string;writer:string}
+type Team={lead:Person;people:Person[]}
+type Data={buLead:Person;designLead:Person;contentLead:Person;clusters:Person[];design:Team[];content:Team[];accounts:Account[]}
 const p=(id:string,name:string,designation=""):Person=>({id,name,designation})
-const v=(id:string,name:string,people:Person[]=[]):Vertical=>({id,name,designation:"",people})
-const makeBU=(i:number):BU=>({id:`bu${i}`,name:`BU${i}`,lead:p(`bu${i}-lead`,"BU Lead"),design:p(`bu${i}-design`,"CD – Design"),content:p(`bu${i}-content`,"CD – Content"),accounts:[],designers:[],writers:[]})
-const seed:Data={founders:p("founders","Founders"),finance:v("finance","Finance"),mahima:p("mahima","Mahima","CBO"),support:[v("advisory","Advisory"),v("operations","Operations"),v("hr","HR")],bus:[1,2,3,4].map(makeBU)}
-const STORAGE="zen-org-v3"
-
-function Card({person,onEdit}:{person:Person;onEdit:(p:Person)=>void}){return <button className="card" onClick={()=>onEdit(person)}><strong>{person.name||"Name"}</strong>{person.designation&&<span>{person.designation}</span>}</button>}
+const seed:Data={
+ buLead:p("bu-lead","Rohan Mehta","BU Lead – BU1"),
+ designLead:p("design-lead","Chetan Vijayakumar","CD – Design"),
+ contentLead:p("content-lead","Jenny","CD – Content"),
+ clusters:[p("cl1","Aarti Sharma","Cluster Lead 1"),p("cl2","Vikram Rao","Cluster Lead 2"),p("cl3","Simran Kaur","Cluster Lead 3")],
+ design:[{lead:p("dl1","Kiran","Design Lead 1"),people:[p("d1","Arjun","Sr. Graphic Designer"),p("d2","Ashish","Sr. Graphic Designer"),p("d3","Lekha","Sr. Graphic Designer"),p("d4","Niranjana","Jr. Graphic Designer"),p("d5","Anu Umesh","Graphic Designer")]},{lead:p("dl2","Hari","Design Lead 2"),people:[p("d6","Akshay","Sr. Graphic Designer"),p("d7","Nejith","Graphic Designer"),p("d8","Fadi","Jr. Graphic Designer"),p("d9","Chaitanya","Intern – Designer")]},{lead:p("dl3","Toms","Design Lead 3"),people:[p("d10","Sai","Sr. Graphic Designer"),p("d11","Aras","Sr. Graphic Designer"),p("d12","Dheeraj","Sr. Graphic Designer"),p("d13","Meghna","Sr. Graphic Designer"),p("d14","Abhinav","Graphic Designer"),p("d15","Govind","Graphic Designer")]}],
+ content:[{lead:p("cl4","Lara","Content Lead 1"),people:[p("w1","Diya","Sr. Content Writer"),p("w2","Saika","Content Writer")]},{lead:p("cl5","Ashna","Content Lead 2"),people:[p("w3","Aahana","Sr. Content Writer"),p("w4","Rhea","Content Writer"),p("w5","Kartik","Jr. Content Writer")]},{lead:p("cl6","Disha","Content Lead 3"),people:[p("w6","Anthony","Content Writer"),p("w7","Abhishek","Jr. Content Writer")]}],
+ accounts:[
+ {id:"a1",name:"WNS",cluster:"Cluster 1",am:"Neeraj Kulkarni",designer:"Arjun",writer:"Diya"},{id:"a2",name:"CMS",cluster:"Cluster 1",am:"Pooja Iyer",designer:"Ashish",writer:"Saika"},{id:"a3",name:"Tata Comms",cluster:"Cluster 1",am:"Karan Malhotra",designer:"Lekha",writer:"Aahana"},{id:"a4",name:"HCL TECH",cluster:"Cluster 1",am:"Isha Menon",designer:"Kiran",writer:"Rhea"},{id:"a5",name:"SuperMicro",cluster:"Cluster 1",am:"Vikram Rao",designer:"Kunal Jain",writer:"Kartik"},{id:"a6",name:"Straive",cluster:"Cluster 2",am:"Aditya Singh",designer:"Akshay",writer:"Anthony"},{id:"a7",name:"SOLAR EDGE",cluster:"Cluster 2",am:"Meera Nair",designer:"Nejith",writer:"Abhishek"},{id:"a8",name:"Xerox",cluster:"Cluster 3",am:"Arjun Desai",designer:"Sai",writer:"Disha"}
+ ]}
+const STORAGE="zen-bu1-pilot-v1"
+function Card({person,onEdit}:{person:Person;onEdit:(p:Person)=>void}){return <button className="card" onClick={()=>onEdit(person)}><strong>{person.name}</strong>{person.designation&&<span>{person.designation}</span>}</button>}
 function Add({label,onClick}:{label:string;onClick:()=>void}){return <button className="add" onClick={onClick}>+ {label}</button>}
-function PersonList({people,onEdit,onAdd,label}:{people:Person[];onEdit:(p:Person)=>void;onAdd:()=>void;label:string}){return <div className="personList">{people.map(x=><Card key={x.id} person={x} onEdit={onEdit}/>) }<Add label={label} onClick={onAdd}/></div>}
-
 export default function Home(){
- const [data,setData]=useState<Data>(seed);const [selected,setSelected]=useState<Person|null>(null)
- useEffect(()=>{const raw=localStorage.getItem(STORAGE);if(raw)try{setData(JSON.parse(raw))}catch{}},[])
- useEffect(()=>{localStorage.setItem(STORAGE,JSON.stringify(data))},[data])
- const edit=(x:Person)=>setSelected({...x})
- const replace=(d:Data,x:Person)=>({...d,founders:d.founders.id===x.id?x:d.founders,mahima:d.mahima.id===x.id?x:d.mahima,finance:{...d.finance,people:d.finance.people.map(a=>a.id===x.id?x:a)},support:d.support.map(s=>({...s,people:s.people.map(a=>a.id===x.id?x:a)})),bus:d.bus.map(b=>({...b,lead:b.lead.id===x.id?x:b.lead,design:b.design.id===x.id?x:b.design,content:b.content.id===x.id?x:b.content,accounts:b.accounts.map(a=>a.id===x.id?x:a),designers:b.designers.map(a=>a.id===x.id?x:a),writers:b.writers.map(a=>a.id===x.id?x:a)}))})
- const save=()=>{if(selected){setData(d=>replace(d,selected));setSelected(null)}}
- const addPerson=(where:string)=>setData(d=>{const x=p(`${where}-${Date.now()}`,where.includes("account")?"Account Manager":where.includes("designer")?"Designer":where.includes("writer")?"Content Writer":"Name");if(where==="finance")return {...d,finance:{...d.finance,people:[...d.finance.people,x]}};const m=where.match(/^(advisory|operations|hr)$/);if(m)return {...d,support:d.support.map(s=>s.id===m[1]?{...s,people:[...s.people,x]}:s)};return {...d,bus:multiply(d.bus,where,x)}})
- const multiply=(bus:BU[],where:string,x:Person)=>bus.map(b=>where===`${b.id}-accounts`?{...b,accounts:[...b.accounts,x]}:where===`${b.id}-designers`?{...b,designers:[...b.designers,x]}:where===`${b.id}-writers`?{...b,writers:[...b.writers,x]}:b)
- const editVertical=(id:string,name:string)=>setData(d=>id==="finance"?{...d,finance:{...d.finance,name}}:{...d,support:d.support.map(s=>s.id===id?{...s,name}:s)})
- return <main><header><div><h1>Zen-Sheet</h1><p>Organization Builder · click any card to edit</p></div><button className="reset" onClick={()=>{localStorage.removeItem(STORAGE);location.reload()}}>Reset</button></header>
- <section className="canvas"><div className="chart">
-  <div className="topNode"><Card person={data.founders} onEdit={edit}/></div>
-  <div className="topBranches">
-   <div className="directReportRow">
-    <section className="financeBranch"><div className="levelLabel">DIRECT REPORT</div><button className="verticalTitle" onClick={()=>editVertical("finance",data.finance.name)}>{data.finance.name}</button><PersonList people={data.finance.people} onEdit={edit} onAdd={()=>addPerson("finance")} label="Finance person"/></section>
-    <section className="mahimaBranch"><div className="levelLabel">DIRECT REPORT</div><Card person={data.mahima} onEdit={edit}/></section>
-   </div>
-   <div className="mahimaChildren"><div className="mahimaConnector"/><div className="sevenLevel"><div className="line"/>{data.bus.map(b=><BUColumn key={b.id} b={b} onEdit={edit} onAdd={(k)=>addPerson(`${b.id}-${k}`)}/>)}{data.support.map(s=><SupportColumn key={s.id} s={s} onEdit={edit} onRename={()=>editVertical(s.id,s.name)} onAdd={()=>addPerson(s.id)}/>)}</div></div>
-  </div>
+ const [data,setData]=useState<Data>(seed);const [selected,setSelected]=useState<Person|null>(null);const [account,setAccount]=useState<Account|null>(null)
+ useEffect(()=>{const raw=localStorage.getItem(STORAGE);if(raw)try{setData(JSON.parse(raw))}catch{}},[]);useEffect(()=>{localStorage.setItem(STORAGE,JSON.stringify(data))},[data])
+ const edit=(p:Person)=>setSelected({...p});const save=()=>{if(!selected)return;const replace=(p:Person)=>p.id===selected.id?selected:p;setData(d=>({...d,buLead:replace(d.buLead),designLead:replace(d.designLead),contentLead:replace(d.contentLead),clusters:d.clusters.map(replace),design:d.design.map(t=>({...t,lead:replace(t.lead),people:t.people.map(replace)})),content:d.content.map(t=>({...t,lead:replace(t.lead),people:t.people.map(replace)}))}));setSelected(null)}
+ const add=(kind:string)=>setData(d=>({...d,accounts:kind?d.accounts: d.accounts}));
+ const updateAccount=(field:keyof Account,value:string)=>{if(!account)return;setData(d=>({...d,accounts:d.accounts.map(a=>a.id===account.id?{...a,[field]:value}:a)}));setAccount(a=>a?{...a,[field]:value}:a)}
+ return <main><header><div><h1>Zen-Sheet · BU1 Pilot</h1><p>Editable people, account names and account-level coverage mapping</p></div><button className="reset" onClick={()=>{localStorage.removeItem(STORAGE);location.reload()}}>Reset</button></header>
+ <section className="canvas"><div className="pilot">
+  <div className="pilotTop"><Card person={data.buLead} onEdit={edit}/></div><div className="pilotBranches"><section><Card person={data.buLead} onEdit={edit}/><h3>Cluster Leads / Account Management</h3>{data.clusters.map(c=><div className="mini" key={c.id}><Card person={c} onEdit={edit}/></div>)}</section><section><Card person={data.designLead} onEdit={edit}/><h3>Design Leads</h3>{data.design.map(t=><div className="mini" key={t.lead.id}><Card person={t.lead} onEdit={edit}/><div className="people">{t.people.map(x=><Card key={x.id} person={x} onEdit={edit}/>)}</div></div>)}</section><section><Card person={data.contentLead} onEdit={edit}/><h3>Content Leads</h3>{data.content.map(t=><div className="mini" key={t.lead.id}><Card person={t.lead} onEdit={edit}/><div className="people">{t.people.map(x=><Card key={x.id} person={x} onEdit={edit}/>)}</div></div>)}</section></div>
+  <div className="coverage"><div className="coverageHead"><h2>Account Coverage View · BU1</h2><p>Each account has its own Account Manager, Designer and Content Writer. Click any account card to edit the mapping.</p></div><div className="accountGrid">{data.accounts.map(a=><button className="accountCard" key={a.id} onClick={()=>setAccount({...a})}><strong>{a.name}</strong><span>{a.cluster}</span><div><b>Account Manager</b>{a.am}</div><div><b>Designer</b>{a.designer}</div><div><b>Content Writer</b>{a.writer}</div></button>)}</div></div>
  </div></section>
  {selected&&<div className="modal"><div className="dialog"><h2>Edit person</h2><label>Name<input autoFocus value={selected.name} onChange={e=>setSelected({...selected,name:e.target.value})}/></label><label>Designation<input value={selected.designation} onChange={e=>setSelected({...selected,designation:e.target.value})}/></label><div className="actions"><button onClick={()=>setSelected(null)}>Cancel</button><button className="save" onClick={save}>Save</button></div></div></div>}
+ {account&&<div className="modal"><div className="dialog"><h2>Edit account coverage</h2><label>Account / Brand<input autoFocus value={account.name} onChange={e=>updateAccount("name",e.target.value)}/></label><label>Cluster<input value={account.cluster} onChange={e=>updateAccount("cluster",e.target.value)}/></label><label>Account Manager<input value={account.am} onChange={e=>updateAccount("am",e.target.value)}/></label><label>Designer<input value={account.designer} onChange={e=>updateAccount("designer",e.target.value)}/></label><label>Content Writer<input value={account.writer} onChange={e=>updateAccount("writer",e.target.value)}/></label><div className="actions"><button onClick={()=>setAccount(null)}>Done</button></div></div></div>}
  </main>
 }
-
-function BUColumn({b,onEdit,onAdd}:{b:BU;onEdit:(p:Person)=>void;onAdd:(k:"accounts"|"designers"|"writers")=>void}){return <article className="vertical buColumn"><h2>{b.name}</h2><div className="leaders"><Leader title="BU Lead" person={b.lead} onEdit={onEdit}/><Leader title="CD – Design" person={b.design} onEdit={onEdit}/><Leader title="CD – Content" person={b.content} onEdit={onEdit}/></div><div className="children"><Child title="Account Managers" people={b.accounts} onEdit={onEdit} onAdd={()=>onAdd("accounts")} label="Account Manager"/><Child title="Designers" people={b.designers} onEdit={onEdit} onAdd={()=>onAdd("designers")} label="Designer"/><Child title="Content Writers" people={b.writers} onEdit={onEdit} onAdd={()=>onAdd("writers")} label="Content Writer"/></div></article>}
-function Leader({title,person,onEdit}:{title:string;person:Person;onEdit:(p:Person)=>void}){return <div className="leader"><h3>{title}</h3><Card person={person} onEdit={onEdit}/></div>}
-function Child({title,people,onEdit,onAdd,label}:{title:string;people:Person[];onEdit:(p:Person)=>void;onAdd:()=>void;label:string}){return <div className="child"><h4>{title}</h4>{people.map(x=><Card key={x.id} person={x} onEdit={onEdit}/>) }<Add label={label} onClick={onAdd}/></div>}
-function SupportColumn({s,onEdit,onRename,onAdd}:{s:Vertical;onEdit:(p:Person)=>void;onRename:()=>void;onAdd:()=>void}){return <article className="vertical supportColumn"><button className="verticalTitle" onClick={onRename}>{s.name}</button><PersonList people={s.people} onEdit={onEdit} onAdd={onAdd} label={`${s.name} person`}/></article>}
